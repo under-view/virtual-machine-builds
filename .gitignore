@@ -1,2 +1,4 @@
 *.swp
 vm-storage
+*.wic
+*.iso
