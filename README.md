@@ -11,6 +11,12 @@ $ ./genvm.sh \
     --vm-size 32
 ```
 
+**List all VM**
+
+```bash
+$ virsh list --all
+```
+
 **Start VM**
 
 ```bash
