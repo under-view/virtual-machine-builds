@@ -12,7 +12,7 @@ CDIR="$(pwd)"
 VM_STORAGE="${CDIR}/vm-storage"
 
 VM_SIZE=0
-UEFI_SUPPORT=1
+UEFI_SUPPORT=0
 
 VM_NAME=""
 INSTALLER_FILE=""
@@ -26,7 +26,7 @@ gen_vm () {
 	local vm_size=$(stat --dereference --format="%s" "${INSTALLER_FILE}")
 	vm_size=$((vm_size / 1024 / 1024 / 1024))
 
-	local boot_flag="hd,menu=on,useserial=on"
+	local boot_flag="menu=on,useserial=on"
 	if [ "${UEFI_SUPPORT}" -eq 1 ]; then
 		boot_flag="${boot_flag},uefi"
 	fi
@@ -39,8 +39,8 @@ gen_vm () {
 		--vcpus 8 \
 		--memory 8196 \
 		--boot "${boot_flag}" \
-		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="qed" \
-		--disk path="${INSTALLER_FILE}",size="${vm_size}",device="disk",bus="usb",format="raw" \
+		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="qed",boot.order=1 \
+		--disk path="${INSTALLER_FILE}",size="${vm_size}",device="disk",bus="usb",format="raw",boot.order=2 \
 		--check path_in_use=off \
 		--print-xml > "${domain}"
 	if [ $? -ne 0 ]; then
