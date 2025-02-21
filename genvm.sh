@@ -16,6 +16,7 @@ UEFI_SUPPORT=0
 
 VM_NAME=""
 INSTALLER_FILE=""
+ARCH="x86_64"
 
 gen_vm () {
 	mkdir -p "${VM_STORAGE}"
@@ -32,10 +33,11 @@ gen_vm () {
 	fi
 
 	virt-install \
+		--name "${VM_NAME}" \
 		--virt-type kvm \
 		--os-variant generic \
-		--name "${VM_NAME}" \
 		--cpu host \
+		--arch "${ARCH}" \
 		--vcpus 8 \
 		--memory 8196 \
 		--boot "${boot_flag}" \
@@ -66,6 +68,8 @@ help_msg () {
 	printf "\t-i, --installer-file <installer image>" ; printf "\tLiveusb installer image\n"
 	printf "\t-n, --vm-name <vm name>               " ; printf "\tName of the virtual machine\n"
 	printf "\t-s, --vm-size <vm size>               " ; printf "\tSize of the virtual machine (In GiB)\n"
+	printf "\t-a, --arch <cpu architecture>         " ; printf "\tDefine CPU architecture for virtual machine\n"
+	printf "\t                                      " ; printf "\tDefault: x86_64\n"
 	printf "\t-u, --uefi                            " ; printf "\tEnable to disable UEFI support\n"
 	printf "\t-h, --help                            " ; printf "\tSee this message\n"
 }
@@ -106,6 +110,12 @@ do
 			shift
 			VM_SIZE=$1
 			[ "${VM_SIZE}" -eq 0 ] && exit_err_help
+			shift
+			;;
+		-a|--arch)
+			shift
+			ARCH="$1"
+			[ -z "${ARCH}" ] && exit_err_help
 			shift
 			;;
 		-u|--uefi)
