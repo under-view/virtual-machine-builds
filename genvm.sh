@@ -1,5 +1,10 @@
 #!/bin/bash
 
+################################################
+# Good reference documentation                 #
+# https://man.archlinux.org/man/virt-install.1 #
+################################################
+
 SUCCESS=0
 FAILURE=1
 
@@ -7,6 +12,8 @@ CDIR="$(pwd)"
 VM_STORAGE="${CDIR}/vm-storage"
 
 VM_SIZE=0
+UEFI_SUPPORT=1
+
 VM_NAME=""
 INSTALLER_FILE=""
 
@@ -19,6 +26,11 @@ gen_vm () {
 	local vm_size=$(stat --dereference --format="%s" "${INSTALLER_FILE}")
 	vm_size=$((vm_size / 1024 / 1024 / 1024))
 
+	local boot_flag="hd,menu=on,useserial=on"
+	if [ "${UEFI_SUPPORT}" -eq 1 ]; then
+		boot_flag="${boot_flag},uefi"
+	fi
+
 	virt-install \
 		--virt-type kvm \
 		--os-variant generic \
@@ -26,8 +38,10 @@ gen_vm () {
 		--cpu host \
 		--vcpus 8 \
 		--memory 8196 \
-		--disk path="${INSTALLER_FILE}",size="${vm_size}",device="disk",bus="usb",format="raw" \
+		--boot "${boot_flag}" \
 		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="qed" \
+		--disk path="${INSTALLER_FILE}",size="${vm_size}",device="disk",bus="usb",format="raw" \
+		--check path_in_use=off \
 		--print-xml > "${domain}"
 	if [ $? -ne 0 ]; then
 		echo "[x] virt-install ${VM_NAME} failed"
@@ -52,6 +66,7 @@ help_msg () {
 	printf "\t-i, --installer-file <installer image>" ; printf "\tLiveusb installer image\n"
 	printf "\t-n, --vm-name <vm name>               " ; printf "\tName of the virtual machine\n"
 	printf "\t-s, --vm-size <vm size>               " ; printf "\tSize of the virtual machine (In GiB)\n"
+	printf "\t-u, --uefi                            " ; printf "\tEnable to disable UEFI support\n"
 	printf "\t-h, --help                            " ; printf "\tSee this message\n"
 }
 
@@ -92,6 +107,10 @@ do
 			VM_SIZE=$1
 			[ "${VM_SIZE}" -eq 0 ] && exit_err_help
 			shift
+			;;
+		-u|--uefi)
+			shift
+			UEFI_SUPPORT=1
 			;;
 		*)
 			help_msg
