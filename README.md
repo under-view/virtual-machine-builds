@@ -47,3 +47,31 @@ $ virsh undefine <vm-name> --remove-all-storage
 # Remove VM and nvram
 $ virsh undefine <vm-name> --nvram
 ```
+
+### VM Virtual Networking
+
+**List all networks**
+
+```bash
+$ virsh net-list --all
+```
+
+**Edit Default Config**
+
+```bash
+$ virsh net-edit default
+```
+
+**Create VM Host Only Virtual Network**
+
+```bash
+$ virsh net-define net/vmbridge0.xml
+$ virsh net-start vmbridge0
+
+# Change the NIC settings from default over
+# to your new bridge. To do this run bellow
+# and look for <interface type='bridge'>
+# <source bridge='virbr0'/> should be changed
+# to <source bridge='vmbridge0'/>
+$ virsh edit <vm-name>
+```
