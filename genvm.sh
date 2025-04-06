@@ -14,6 +14,7 @@ VM_STORAGE="${CDIR}/vm-storage"
 VM_SIZE=0
 UEFI_SUPPORT=0
 
+VM_NET=""
 VM_NAME=""
 INSTALLER_FILE=""
 ARCH="x86_64"
@@ -21,16 +22,21 @@ ARCH="x86_64"
 gen_vm () {
 	mkdir -p "${VM_STORAGE}"
 
+	local network_flag=""
 	local domain="${VM_STORAGE}/${VM_NAME}.xml"
 	local qed_file="${VM_STORAGE}/${VM_NAME}.qed"
-
+	local boot_flag="--boot menu=on,useserial=on"
 	local vm_size=$(stat --dereference --format="%s" "${INSTALLER_FILE}")
-	vm_size=$((vm_size / 1024 / 1024 / 1024))
 
-	local boot_flag="menu=on,useserial=on"
 	if [ "${UEFI_SUPPORT}" -eq 1 ]; then
 		boot_flag="${boot_flag},uefi"
 	fi
+
+	if [ -n "${VM_NET}" ]; then
+		network_flag="--network network=${VM_NET},model=virtio"
+	fi
+
+	vm_size=$((vm_size / 1024 / 1024 / 1024))
 
 	virt-install \
 		--name "${VM_NAME}" \
@@ -40,7 +46,8 @@ gen_vm () {
 		--arch "${ARCH}" \
 		--vcpus 8 \
 		--memory 8196 \
-		--boot "${boot_flag}" \
+		${boot_flag} \
+		${network_flag} \
 		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="qed",boot.order=1 \
 		--disk path="${INSTALLER_FILE}",size="${vm_size}",device="disk",bus="usb",format="raw",boot.order=2 \
 		--check path_in_use=off \
@@ -70,6 +77,7 @@ help_msg () {
 	printf "\t-s, --vm-size <vm size>               " ; printf "\tSize of the virtual machine (In GiB)\n"
 	printf "\t-a, --arch <cpu architecture>         " ; printf "\tDefine CPU architecture for virtual machine\n"
 	printf "\t                                      " ; printf "\tDefault: x86_64\n"
+	printf "\t-w, --network <virtual network>       " ; printf "\tVirtual network to associate with VM.\n"
 	printf "\t-u, --uefi                            " ; printf "\tEnable to disable UEFI support\n"
 	printf "\t-h, --help                            " ; printf "\tSee this message\n"
 }
@@ -116,6 +124,12 @@ do
 			shift
 			ARCH="$1"
 			[ -z "${ARCH}" ] && exit_err_help
+			shift
+			;;
+		-w|--network)
+			shift
+			VM_NET="$1"
+			[ -z "${VM_NET}" ] && exit_err_help
 			shift
 			;;
 		-u|--uefi)
