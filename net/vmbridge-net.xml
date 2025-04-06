@@ -1,0 +1,5 @@
+<network>
+	<name>vmbridge-net</name>
+	<forward mode="bridge" />
+	<bridge name="vmbridge0" />
+</network>

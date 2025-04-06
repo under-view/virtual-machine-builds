@@ -54,18 +54,6 @@ $ virsh undefine <vm-name> --nvram
 
 ### Host-Only Network Manual Setup
 
-**List all networks**
-
-```bash
-$ virsh net-list --all
-```
-
-**Edit Default Config**
-
-```bash
-$ virsh net-edit default
-```
-
 **Host Virtual Network**
 
 https://www.kevindiaz.dev/blog/qemu-host-only-networking.html
@@ -104,14 +92,23 @@ $ sudo modprobe br_netfilter
 $ sudo sysctl -p /etc/sysctl.d/99-netfilter-bridge.conf
 ```
 
-```bash
-$ virsh net-define net/vmbridge0.xml
-$ virsh net-start vmbridge0
+### virsh Create & Manage virtual networks
 
-# Change the NIC settings from default over
-# to your new bridge. To do this run bellow
-# and look for <interface type='bridge'>
-# <source bridge='virbr0'/> should be changed
-# to <source bridge='vmbridge0'/>
-$ virsh edit <vm-name>
+**List all networks**
+
+```bash
+$ virsh net-list --all
+```
+
+**Edit Default Config**
+
+```bash
+$ virsh net-edit default
+```
+
+**Create/Start virtual network**
+
+```bash
+$ virsh net-define net/vmbridge-net.xml
+$ virsh net-start vmbridge-net
 ```
