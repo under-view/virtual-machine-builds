@@ -2,7 +2,7 @@
 
 Quickly build virtual machines for testing
 
-### Usage
+## Usage
 
 ```bash
 $ ./genvm.sh \
@@ -48,7 +48,11 @@ $ virsh undefine <vm-name> --remove-all-storage
 $ virsh undefine <vm-name> --nvram
 ```
 
-### VM Virtual Networking
+## VM Virtual Networking
+
+### vsock
+
+### Host-Only Network Manual Setup
 
 **List all networks**
 
@@ -62,7 +66,27 @@ $ virsh net-list --all
 $ virsh net-edit default
 ```
 
-**Create VM Host Only Virtual Network**
+**Host Virtual Network**
+
+https://www.kevindiaz.dev/blog/qemu-host-only-networking.html
+
+```bash
+# Create the virtual bridge and bring the interface up.
+$ sudo ip link add vmbridge0 type bridge
+$ sudo ip link set vmbridge0 up
+
+# Create the tap
+$ sudo ip tuntap add dev vmbridge-nic mode tap
+
+# Bring up the interface in promiscuous mode
+$ sudo ip link set vmbridge-nic up promisc on
+
+# Make vmbridge-nic a slave of secnet
+$ sudo ip link set vmbridge-nic master vmbridge0
+
+# Give bridge vmbridge0 an IP address of 192.168.123.1
+$ sudo ip addr add 192.168.123.1/24 broadcast 192.168.123.255 dev vmbridge0
+```
 
 ```bash
 $ virsh net-define net/vmbridge0.xml
