@@ -58,6 +58,14 @@ $ virsh undefine <vm-name> --nvram
 $ sudo modprobe vhost_vsock
 ```
 
+**Guest VM Kernel Config Symbols**
+
+```
+CONFIG_VIRTIO_PCI=m
+CONFIG_VIRTIO_VSOCKETS=m
+CONFIG_VHOST_VSOCK=m // Host side requires
+```
+
 ### Host-Only Network Manual Setup
 
 **Host Only Virtual Network**
