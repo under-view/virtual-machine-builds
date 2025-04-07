@@ -16,12 +16,14 @@ UEFI_SUPPORT=0
 
 VM_NET=""
 VM_NAME=""
+VSOCK_CID=""
 INSTALLER_FILE=""
 ARCH="x86_64"
 
 gen_vm () {
 	mkdir -p "${VM_STORAGE}"
 
+	local vsock_flag=""
 	local network_flag=""
 	local domain="${VM_STORAGE}/${VM_NAME}.xml"
 	local qed_file="${VM_STORAGE}/${VM_NAME}.qed"
@@ -36,6 +38,10 @@ gen_vm () {
 		network_flag="--network network=${VM_NET},model=virtio"
 	fi
 
+	if [ -n "${VSOCK_CID}" ]; then
+		vsock_flag="--vsock cid.auto=no,cid.address=${VSOCK_CID}"
+	fi
+
 	vm_size=$((vm_size / 1024 / 1024 / 1024))
 
 	virt-install \
@@ -48,6 +54,7 @@ gen_vm () {
 		--memory 8196 \
 		${boot_flag} \
 		${network_flag} \
+		${vsock_flag} \
 		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="qed",boot.order=1 \
 		--disk path="${INSTALLER_FILE}",size="${vm_size}",device="disk",bus="usb",format="raw",boot.order=2 \
 		--check path_in_use=off \
@@ -78,6 +85,8 @@ help_msg () {
 	printf "\t-a, --arch <cpu architecture>         " ; printf "\tDefine CPU architecture for virtual machine\n"
 	printf "\t                                      " ; printf "\tDefault: x86_64\n"
 	printf "\t-w, --network <virtual network>       " ; printf "\tVirtual network to associate with VM.\n"
+	printf "\t-c, --vsock-cid <VM context ID>       " ; printf "\tContext Identifier used to identify the VM.\n"
+	printf "\t                                      " ; printf "\tWhen leveraging virtio-vsock.\n"
 	printf "\t-u, --uefi                            " ; printf "\tEnable to disable UEFI support\n"
 	printf "\t-h, --help                            " ; printf "\tSee this message\n"
 }
@@ -132,6 +141,12 @@ do
 			[ -z "${VM_NET}" ] && exit_err_help
 			shift
 			;;
+		-c|--vsock-cid)
+			shift
+			VSOCK_CID="$1"
+			[ -z "${VSOCK_CID}" ] && exit_err_help
+			shift
+			;;
 		-u|--uefi)
 			shift
 			UEFI_SUPPORT=1
@@ -143,7 +158,7 @@ do
 	esac
 done
 
-# Check all arguments are passed
+# Check all required arguments are passed
 if [ -z "${INSTALLER_FILE}" ] || \
    [ -z "${VM_NAME}"        ] || \
    [ "${VM_SIZE}" -eq 0     ];
