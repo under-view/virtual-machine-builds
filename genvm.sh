@@ -74,6 +74,14 @@ gen_vm () {
 }
 
 
+is_number() {
+	case "$1" in
+		''|*[!0-9]*) return $FAILURE ;;
+		*)           return $SUCCESS ;;
+	esac
+}
+
+
 help_msg () {
 	fname="$1"
 	printf "Usage: ${fname} [options]\n"
@@ -127,6 +135,7 @@ do
 			shift
 			VM_SIZE=$1
 			[ "${VM_SIZE}" -eq 0 ] && exit_err_help
+			is_number "${VSOCK_CID}" || exit_err_help
 			shift
 			;;
 		-a|--arch)
@@ -145,6 +154,7 @@ do
 			shift
 			VSOCK_CID="$1"
 			[ -z "${VSOCK_CID}" ] && exit_err_help
+			is_number "${VSOCK_CID}" || exit_err_help
 			shift
 			;;
 		-u|--uefi)
