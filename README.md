@@ -52,9 +52,15 @@ $ virsh undefine <vm-name> --nvram
 
 ### vsock
 
+**Load vhost_vsock kernel module**
+
+```bash
+$ sudo modprobe vhost_vsock
+```
+
 ### Host-Only Network Manual Setup
 
-**Host Virtual Network**
+**Host Only Virtual Network**
 
 https://www.kevindiaz.dev/blog/qemu-host-only-networking.html
 
@@ -76,13 +82,15 @@ $ sudo ip link set vmbridge-nic master vmbridge0
 $ sudo ip addr add 192.168.123.1/24 broadcast 192.168.123.255 dev vmbridge0
 ```
 
-**Disable netfilter for the bridge**
+**Disable netfilter for bridges**
 
 ```bash
 $ cat > /etc/sysctl.d/99-netfilter-bridge.conf <<EOF
 net.bridge.bridge-nf-call-ip6tables = 0
 net.bridge.bridge-nf-call-iptables = 0
 net.bridge.bridge-nf-call-arptables = 0
+net.bridge.bridge-nf-filter-vlan-tagged=0
+net.bridge.bridge-nf-filter-pppoe-tagged=0
 EOF
 
 # Load the br_netfilter module
