@@ -55,7 +55,7 @@ $ virsh undefine <vm-name> --nvram
 **Load vhost_vsock kernel module**
 
 ```bash
-$ sudo modprobe vhost_vsock
+$ sudo modprobe -a vhost_vsock vsock_loopback
 ```
 
 **Guest VM Kernel Config Symbols**
