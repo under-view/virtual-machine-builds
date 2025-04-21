@@ -133,9 +133,9 @@ do
 			;;
 		-s|--vm-size)
 			shift
-			VM_SIZE=$1
-			[ "${VM_SIZE}" -eq 0 ] && exit_err_help
-			is_number "${VSOCK_CID}" || exit_err_help
+			VM_SIZE="$1"
+			[ -z "${VM_SIZE}" ] && exit_err_help
+			is_number "${VM_SIZE}" || exit_err_help
 			shift
 			;;
 		-a|--arch)
