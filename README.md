@@ -61,9 +61,13 @@ $ sudo modprobe -a vhost_vsock vsock_loopback
 **Guest VM Kernel Config Symbols**
 
 ```
-CONFIG_VIRTIO_PCI=m
-CONFIG_VIRTIO_VSOCKETS=m
-CONFIG_VHOST_VSOCK=m // Host side requires
+CONFIG_VIRTIO_PCI
+CONFIG_VIRTIO
+CONFIG_VIRTIO_VSOCKETS
+CONFIG_VSOCKETS
+CONFIG_VSOCKETS_DIAG
+CONFIG_VIRTIO_VSOCKETS
+CONFIG_VIRTIO_VSOCKETS_COMMON
 ```
 
 ### Host-Only Network Manual Setup
