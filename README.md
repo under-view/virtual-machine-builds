@@ -52,7 +52,7 @@ $ virsh undefine <vm-name> --nvram
 
 ### vsock
 
-**Load vhost_vsock kernel module**
+**Load Host/Hypervisor Kernel Modules**
 
 ```bash
 $ sudo modprobe -a vhost_vsock vsock_loopback
@@ -61,14 +61,15 @@ $ sudo modprobe -a vhost_vsock vsock_loopback
 **Guest VM Kernel Config Symbols**
 
 ```
-CONFIG_PCI=y
+CONFIG_PCI=Y
+CONFIG_VIRTIO_MENU=y
 CONFIG_VIRTIO_PCI=y
+CONFIG_VIRTIO_BALLON=y
+CONFIG_VSOCKETS_DIAG=y
+
 CONFIG_NET=y
 CONFIG_VSOCKETS=y
-CONFIG_VIRTIO_BALLOON=y
-CONFIG_VSOCKETS_DIAG=y
 CONFIG_VIRTIO_VSOCKETS=y
-CONFIG_VSOCKETS_LOOPBACK=m
 ```
 
 ### Host-Only Network Manual Setup
