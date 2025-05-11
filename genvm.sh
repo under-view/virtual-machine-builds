@@ -42,6 +42,10 @@ gen_vm () {
 		vsock_flag="--vsock cid.auto=no,cid.address=${VSOCK_CID}"
 	fi
 
+	if [ -n "${DISPLAY}" ]; then
+		graphics_flag="--graphics vnc --video virtio"
+	fi
+
 	vm_size=$((vm_size / 1024 / 1024 / 1024))
 
 	virt-install \
@@ -55,6 +59,7 @@ gen_vm () {
 		${boot_flag} \
 		${network_flag} \
 		${vsock_flag} \
+		${graphics_flag} \
 		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="qed",boot.order=1 \
 		--disk path="${INSTALLER_FILE}",size="${vm_size}",device="disk",bus="usb",format="raw",boot.order=2 \
 		--check path_in_use=off \
