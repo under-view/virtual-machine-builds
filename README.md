@@ -134,3 +134,16 @@ $ virsh net-edit default
 $ virsh net-define net/vmbridge-net.xml
 $ virsh net-start vmbridge-net
 ```
+
+### NFS Kernel Config Fragments
+
+```bash
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+CONFIG_IP_PNP_BOOTP=y
+CONFIG_IP_PNP_RARP=y
+
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y
+CONFIG_ROOT_NFS=y
+```
