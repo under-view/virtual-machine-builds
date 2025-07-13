@@ -18,17 +18,19 @@ VM_NET=""
 VM_NAME=""
 VSOCK_CID=""
 INSTALLER_FILE=""
+SYSTEM_IMAGE_FILE=""
 ARCH="x86_64"
 
 gen_vm () {
 	mkdir -p "${VM_STORAGE}"
 
+	local vm_size=""
 	local vsock_flag=""
 	local network_flag=""
+	local installer_disk=""
 	local domain="${VM_STORAGE}/${VM_NAME}.xml"
 	local qed_file="${VM_STORAGE}/${VM_NAME}.qed"
 	local boot_flag="--boot menu=on,useserial=on"
-	local vm_size=$(stat --dereference --format="%s" "${INSTALLER_FILE}")
 
 	if [ "${UEFI_SUPPORT}" -eq 1 ]; then
 		boot_flag="${boot_flag},uefi"
@@ -46,6 +48,22 @@ gen_vm () {
 		graphics_flag="--graphics vnc --video virtio"
 	fi
 
+	if [ -n "${SYSTEM_IMAGE_FILE}" ]; then
+		format="raw"
+		qed_file="${SYSTEM_IMAGE_FILE}"
+		vm_size=$(stat --dereference --format="%s" "${SYSTEM_IMAGE_FILE}")
+	fi
+
+	if [ -n "${INSTALLER_FILE}" ]; then
+		installer_disk="--disk path=\"${INSTALLER_FILE}\""
+		installer_disk="${installer_disk},size=\"${vm_size}\""
+		installer_disk="${installer_disk},device=\"disk\""
+		installer_disk="${installer_disk},bus=\"usb\""
+		installer_disk="${installer_disk},format=\"raw\""
+		installer_disk="${installer_disk},boot.order=2"
+		vm_size=$(stat --dereference --format="%s" "${INSTALLER_FILE}")
+	fi
+
 	vm_size=$((vm_size / 1024 / 1024 / 1024))
 
 	virt-install \
@@ -60,8 +78,8 @@ gen_vm () {
 		${network_flag} \
 		${vsock_flag} \
 		${graphics_flag} \
+		${installer_disk} \
 		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="qed",boot.order=1 \
-		--disk path="${INSTALLER_FILE}",size="${vm_size}",device="disk",bus="usb",format="raw",boot.order=2 \
 		--check path_in_use=off \
 		--print-xml > "${domain}"
 	if [ $? -ne 0 ]; then
@@ -90,9 +108,12 @@ is_number() {
 help_msg () {
 	fname="$1"
 	printf "Usage: ${fname} [options]\n"
-	printf "Example: ${fname} --installer-file <installer image> --vm-name udoo-bolt --vm-size 32\n"
+	printf "Examples:\n"
+	printf "\t${fname} --installer-file <installer image> --vm-name udoo-bolt --vm-size 32\n"
+	printf "\t${fname} --system-image-file <system image> --vm-name udoo-bolt --vm-size 32\n"
 	printf "Options:\n"
 	printf "\t-i, --installer-file <installer image>" ; printf "\tLiveusb installer image\n"
+	printf "\t-t, --system-image-file <wic image>   " ; printf "\tA system image with bootloader installed.\n"
 	printf "\t-n, --vm-name <vm name>               " ; printf "\tName of the virtual machine\n"
 	printf "\t-s, --vm-size <vm size>               " ; printf "\tSize of the virtual machine (In GiB)\n"
 	printf "\t-a, --arch <cpu architecture>         " ; printf "\tDefine CPU architecture for virtual machine\n"
@@ -128,6 +149,12 @@ do
 			shift
 			INSTALLER_FILE="$1"
 			[ -z "${INSTALLER_FILE}" ] && exit_err_help
+			shift
+			;;
+		-t|--system-image-file)
+			shift
+			SYSTEM_IMAGE_FILE="$1"
+			[ -z "${SYSTEM_IMAGE_FILE}" ] && exit_err_help
 			shift
 			;;
 		-n|--vm-name)
@@ -174,9 +201,10 @@ do
 done
 
 # Check all required arguments are passed
-if [ -z "${INSTALLER_FILE}" ] || \
-   [ -z "${VM_NAME}"        ] || \
-   [ "${VM_SIZE}" -eq 0     ];
+if [ -z "${INSTALLER_FILE}"    ] && \
+   [ -z "${SYSTEM_IMAGE_FILE}" ] || \
+   [ -z "${VM_NAME}"           ] || \
+   [ "${VM_SIZE}" -eq 0        ];
 then
 	exit_err_help
 fi
