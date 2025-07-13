@@ -28,6 +28,8 @@ gen_vm () {
 	local vsock_flag=""
 	local network_flag=""
 	local installer_disk=""
+
+	local format="qed"
 	local domain="${VM_STORAGE}/${VM_NAME}.xml"
 	local qed_file="${VM_STORAGE}/${VM_NAME}.qed"
 	local boot_flag="--boot menu=on,useserial=on"
@@ -79,7 +81,7 @@ gen_vm () {
 		${vsock_flag} \
 		${graphics_flag} \
 		${installer_disk} \
-		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="qed",boot.order=1 \
+		--disk path="${qed_file}",size="${VM_SIZE}",device="disk",bus="sata",format="${format}",boot.order=1 \
 		--check path_in_use=off \
 		--print-xml > "${domain}"
 	if [ $? -ne 0 ]; then
