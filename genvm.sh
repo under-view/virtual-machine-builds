@@ -54,19 +54,20 @@ gen_vm () {
 		format="raw"
 		qed_file="${SYSTEM_IMAGE_FILE}"
 		vm_size=$(stat --dereference --format="%s" "${SYSTEM_IMAGE_FILE}")
+		vm_size=$((vm_size / 1024 / 1024 / 1024))
 	fi
 
 	if [ -n "${INSTALLER_FILE}" ]; then
+		vm_size=$(stat --dereference --format="%s" "${INSTALLER_FILE}")
+		vm_size=$((vm_size / 1024 / 1024 / 1024))
+
 		installer_disk="--disk path=\"${INSTALLER_FILE}\""
 		installer_disk="${installer_disk},size=\"${vm_size}\""
 		installer_disk="${installer_disk},device=\"disk\""
 		installer_disk="${installer_disk},bus=\"usb\""
 		installer_disk="${installer_disk},format=\"raw\""
 		installer_disk="${installer_disk},boot.order=2"
-		vm_size=$(stat --dereference --format="%s" "${INSTALLER_FILE}")
 	fi
-
-	vm_size=$((vm_size / 1024 / 1024 / 1024))
 
 	virt-install \
 		--name "${VM_NAME}" \
